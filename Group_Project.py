@@ -12,9 +12,9 @@ def read_potentiometers(potentiometer_id):#Dane
 
     #set potentiometer pin -> documentation for all that -> https://projects.raspberrypi.org/en/projects/introduction-to-the-pico/11
 
-    #read potentiometer
+    #read potentiometer (.value) and assign to variable
 
-    #return potentiometer value (.value)
+    #return potentiometr value variable
 
 
 #This function will use both value obtained from the potentiometers (x and y values) and turn them into
