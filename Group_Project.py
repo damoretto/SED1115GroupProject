@@ -2,9 +2,14 @@
 #obtained through this process to two servos that are part of an "arm" that has the ultimate goal of drawing something on paper
 #Submitted int the context of the SED1115 class, fall 2023 semester
 
+import os
 from picozero import Pot    #pip install picozero   (in terminal, will take some time)
 from time import sleep_ms
 from machine import Pin, PWM
+
+#set the file directory to avoid issues
+script_directory = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_directory)
 
 #This function will get input from each potentiometer (called once for each)
 def read_potentiometers(potentiometer_id):#Dane
@@ -47,7 +52,10 @@ def send_to_servo(duty_cycle, PWM_id):#Nathan
     #(int,int)->None
 
     #set PWM Pin, frequency and duty cycle
-
+    pin = Pin(PWM_id, Pin.IN)
+    pwm_object = PWM(pin)
+    pwm_object.freq(50)
+    pwm_object.duty_u16(duty_cycle)
 
 
 #This function will verify if the button has changed states or not (pressed or not pressed) includes debouncing
@@ -109,3 +117,5 @@ try:
 
 except KeyboardInterrupt:
     print("The program was interrupted by the user")
+
+#disable servo Nathan
