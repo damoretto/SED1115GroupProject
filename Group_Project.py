@@ -31,6 +31,8 @@ def read_potentiometers(potentiometer_id):#Dane
     #return potentiometr value variable
     return potentiometer_value
 
+    #sorry bro omg i did this but didnt put it in github FCK GITHUB
+
 
 #This function will use both value obtained from the potentiometers (x and y values) and turn them into
 #proportionally correct versions for the servos
