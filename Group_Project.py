@@ -31,7 +31,6 @@ def read_potentiometers(potentiometer_id):#Dane
     #return potentiometr value variable
     return potentiometer_value
 
-
 #This function will use both value obtained from the potentiometers (x and y values) and turn them into
 #proportionally correct versions for the servos
 def xy_to_servos(x_value, y_value):#Estelle
@@ -50,18 +49,15 @@ def xy_to_servos(x_value, y_value):#Estelle
 
     return servo_shoulder, servo_elbow
 
-
 #This function will individually send their value to each servo (called twice)
-def send_to_servo(duty_cycle, PWM_id):#Nathan
+def init_servo(PWM_id):#Nathan
     #(int,int)->None
 
     #set PWM Pin, frequency and duty cycle
-    pin = Pin(PWM_id, Pin.IN)
+    pin = Pin(PWM_id)
     pwm_object = PWM(pin)
     pwm_object.freq(50)
-    pwm_object.duty_u16(duty_cycle)
-    pwm_object.deinit()
-
+    return pwm_object
 
 #This function will verify if the button has changed states or not (pressed or not pressed) includes debouncing
 def is_button_pressed(button_id):#Nathan
@@ -78,20 +74,20 @@ def is_button_pressed(button_id):#Nathan
         print("There seems to be an issue with the button")
 
 #This function will change the state of the pen (on/off the paper) can use the send_to_servo() function
-def change_pen_state(PWM_id, button_state):#Algo
+def change_pen_state(wrist_servo, pen_state):#Algo
     #(bool)->bool
 
     #define duty cycle for the two states of the pen (on/off the paper)
 
     #conditional that will determine what happens to the state of the pen depending on its current state
-    if button_state:
+    if pen_state:    #if the pen is currently touching the paper
 
         #send the duty cycle to the servo to change its position
 
         #return opposite button state
         return False
 
-    elif not button_state:
+    elif not pen_state: #if the pen is currently not touching the paper
 
         #send the duty cycle to the servo to change its position
 
@@ -101,54 +97,69 @@ def change_pen_state(PWM_id, button_state):#Algo
     else:
         print("This should not happen, problem in change_pen_state() function")
     
-
-#This function will get the image in function of where it comes from
-def get_image():#Nathan
-    #()->Image
-    #initialize the variable containing the Image object that will be returned
-    image = None
+#This function will get the choice of the user on the provenance of the image
+def get_choice():
+    #()->int
     #initialize  the variable that will contain the user's choice of provenance of the image
     choice = -1
     #this is for the user to choose where their image comes from (url or file)
-    while choice != 0 and choice != 1:
-        choice = int(input("Where is your image coming from? URL (0), file (1)"))
-        if choice != 0 and choice != 1:
-            print("wrong input. make sure you choose between 0 and 1")
-    #if the image is from an url
-    if choice == 0:
+    while choice != 0 and choice != 1 and choice != 2:
+        choice = int(input("Where is your image coming from? URL (0), file (1), potentiometers (2)"))
+        if choice != 0 and choice != 1 and choice != 2:
+            print("wrong input. make sure you choose between 0, 1 and 2")
+    return choice
+
+#This function will get the image in function of where it comes from
+def get_image_url():#Nathan
+    #()->Image
+    #initialize the variable containing the Image object that will be returned
+    image = None
+    #flag that will make sure that a good link is used
+    image_found = False
+    while not image_found:
+        #get the url
         url = input("Please paste the URL or the image you desire to print here:\n")
         response = requests.get(url)
         #staus code 200 means that the image was successfully fetched
         if response.status_code == 200:
+            #open image in grayscale
             image = Image.open(BytesIO(response.content)).convert('L')
+            image_found = True
         else:
             #try images from https://unsplash.com/
+            #try 'https://images.unsplash.com/photo-1700212966732-4e0ebd08ad42?q=80&w=3792&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
             print("failed to get the image. Make sure the image is from a good source")
-    #if the image is from a file
-    elif choice == 1:
-        #flag fo the whil loop that makes sure that the image file exists
-        img_not_found = True
-        while img_not_found:
-            file_name = input("please enter the full name of the image file including the file extension (ex. .png .jpg ...):\n")
-            try:
-                image = Image.open(file_name).convert('L')
-                img_not_found = False
+    return image
+
+#This function will get the image object from  file 
+def get_image_file():
+    #()->Image
+    #initialize the variable containing the Image object that will be returned
+    image = None
+    #flag fo the whil loop that makes sure that the image file exists
+    img_not_found = True
+    while img_not_found:
+        file_name = input("please enter the full name of the image file including the file extension (ex. .png .jpg ...):\n")
+        try:
+            #open image in grayscale
+            image = Image.open(file_name).convert('L')
+            img_not_found = False
             #This happens if the image is not in the right directory or does not exists or if the name is spelled wrong
-            except OSError:
-                print("The image cannot be fond, make sure it is present in the same directory as this program and that you wrote the right name")
-                ex = input("press a and enter if you wish to leave the program\n")
-                if ex == 'a':
-                    #this is to allow the user to eventually quit the program and go check in their files where the issue may come from
-                    sys.exit()
-            except:
-                print("unkown error happened?")
+        except OSError:
+            print("The image cannot be fond, make sure it is present in the same directory as this program and that you wrote the right name")
+            ex = input("press a then enter if you wish to leave the program\n")
+            if ex == 'a':
+                #this is to allow the user to eventually quit the program and go check in their files where the issue may come from
+                sys.exit()
+        except:
+            print("unkown error happened?")
     else:
         print("This should not happen, issue with the choice input")
-    
-    return image
-    
 
-#this function will
+    #you can return an opened file object
+    return image   
+
+#this function will transfer the greyscale image object into
 def
 
 
@@ -158,25 +169,37 @@ def
 #all at the same place so easier for user to control
 x_potentiometer_id = 'A1'   #x value potentiometer
 y_potentiometer_id = 'A0'   #y value potentiometer
-servo_elbow_id = 'GPIO0'    #elbow servo (middle one)
-servo_shoulder_id = 'GPIO1' #shoulder servo (furthest from the pen)
-servo_wrist_id = 'GPIO2'    #wrist servo (closest to the pen)
 button_id = 'GPIO22'        #pen state button
 
+#initialize all servos
+shoulder_servo = init_servo('GPIO1')
+elbow_servo = init_servo('GPIO0')
+wrist_servo = init_servo('GPIO2')
+
+
 #this variable will contain the state of the button at all times (bool)
-button_state = False
-
+pen_state = False   #at first not touching the paper
 try:
-    while True:
-        x_value = read_potentiometers(x_potentiometer_id)
-        y_value = read_potentiometers(y_potentiometer_id)
-        servo_shoulder, servo_elbow = xy_to_servos(x_value, y_value)
-        send_to_servo(servo_shoulder, servo_elbow_id)
-        send_to_servo(servo_shoulder, servo_shoulder_id)
-        if is_button_pressed(button_id):
-            button_state = change_pen_state(servo_wrist_id, button_state)
+    if get_choice() == 2:
+        try:
+            while True:
+                x_value = read_potentiometers(x_potentiometer_id)
+                y_value = read_potentiometers(y_potentiometer_id)
+                servo_shoulder_duty, servo_elbow_duty = xy_to_servos(x_value, y_value)
+                elbow_servo.duty_u16(servo_elbow_duty)
+                shoulder_servo.duty_u16(servo_shoulder_duty)
+                if is_button_pressed(button_id):
+                    pen_state = change_pen_state(wrist_servo, pen_state)
+        except KeyboardInterrupt:
+            wrist_servo.duty_u16(translate(30)) #disable servo by raising wrist
+            print("The program was interrupted by the user")
+    elif get_choice == 1:
+        image = get_image_url()
 
-except KeyboardInterrupt:
-    print("The program was interrupted by the user")
-
-#disable servo Nathan
+    elif get_choice == 0:
+        image = get_image_file()
+finally:
+    #deinit all servos
+    shoulder_servo.deinit()
+    elbow_servo.deinit()
+    wrist_servo.deinit()
