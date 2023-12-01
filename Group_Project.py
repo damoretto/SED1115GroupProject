@@ -6,7 +6,7 @@ import os
 import sys
 from servo_translator import translate
 from picozero import Pot    #pip install picozero   (in terminal, will take some time)
-from time import sleep_ms
+from time import sleep_ms, sleep
 from machine import Pin, PWM
 import requests
 from io import BytesIO
@@ -26,35 +26,41 @@ def read_potentiometers(potentiometer_id):#Dane
     potentiometer_value = 0
     #set potentiometer pin -> documentation for all that -> https://projects.raspberrypi.org/en/projects/introduction-to-the-pico/11
     #picozero is already imported as Pot
+    
+    dial = Pot(0)
+   
+    while True:
+        print(dial.value)
+        sleep(0.1)
 
     #read potentiometer (.value) and assign to variable
 
-    #return potentiometr value variable
+    #return potentiometer value variable
     return potentiometer_value
 
 #This function will use both value obtained from the potentiometers (x and y values) and turn them into
 #proportionally correct versions for the servos
-def xy_to_servos(x_value, y_value):#Estelle
+def xy_to_servos(x_value, y_value, seg1len, seg2len):#Estelle
     #(float, float)->int, int
 
     #initialize the variables containing both servo values
     shoulder_angle = 0
     elbow_angle = 0
-    seg1len = float(input("Please enter the length of the first segment in cm")) #do error checking of user imput on this
-    seg2len = float(input("Please enter the length of the second segment in cm")) #do error checking of user imput on this
-    #use inverse kinematics to turn the x and y values into proportional angles between 0 and 180 degrees
-
-    elbow_angle = math.degrees(math.acos((x_value**2 + y_value**2 - seg1len**2 - seg2len**2)/(2*seg1len*seg2len))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of cosines
-    shoulder_angle = math.degrees((math.atan2(y_value, x_value)) - (math.atan2(seg2len*math.sin(elbow_angle)), (seg1len + seg2len*math.cos(elbow_angle)))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of sines
-    #maybe separate the conversion to degrees from the inverse kinematics to make it easier to read
-    
+    try:
+        #use inverse kinematics to turn the x and y values into proportional angles between 0 and 180 degrees
+        elbow_angle = math.degrees(math.acos((x_value**2 + y_value**2 - seg1len**2 - seg2len**2)/(2*seg1len*seg2len))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of cosines
+        shoulder_angle = math.degrees((math.atan2(y_value, x_value)) - (math.atan2((seg2len*math.sin(elbow_angle)), (seg1len + seg2len*math.cos(elbow_angle))))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of sines
+        #maybe separate the conversion to degrees from the inverse kinematics to make it easier to read
+    except UnboundLocalError:
+        seg1len = int(input("Please enter the length of the arm segment in cm")) #do error checking of user imput on this
+        seg2len = int(input("Please enter the length of the forearm segment in cm")) #do error checking of user imput on this
     #call translate from lab6 to turn the values into safe values for the servos
     servo_shoulder = translate(shoulder_angle)
     servo_elbow = translate(elbow_angle)
     #use sleep_ms to slow do the program so that python can keep up and also be proportional to servo frequency
     sleep_ms(20)
 
-    return servo_shoulder, servo_elbow
+    return servo_shoulder, servo_elbow, seg1len, seg2len
 
 #This function will individually send their value to each servo (called twice)
 def init_servo(PWM_id):#Nathan
@@ -166,8 +172,8 @@ def get_image_file():
     #you can return an opened file object
     return image   
 
-#this function will transfer the greyscale image object into
-def
+#this function will transfer the greyscale image object into an array
+
 
 
 '''main'''
@@ -192,7 +198,7 @@ try:
             while True:
                 x_value = read_potentiometers(x_potentiometer_id)
                 y_value = read_potentiometers(y_potentiometer_id)
-                servo_shoulder_duty, servo_elbow_duty = xy_to_servos(x_value, y_value)
+                servo_shoulder_duty, servo_elbow_duty, seg1len, seg2len = xy_to_servos(x_value, y_value, seg1len, seg2len)
                 elbow_servo.duty_u16(servo_elbow_duty)
                 shoulder_servo.duty_u16(servo_shoulder_duty)
                 if is_button_pressed(button_id):
@@ -210,5 +216,3 @@ finally:
     shoulder_servo.deinit()
     elbow_servo.deinit()
     wrist_servo.deinit()
-
-#abc
