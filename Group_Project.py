@@ -57,7 +57,7 @@ def xy_to_servos(x_value, y_value, seg1len, seg2len):#Estelle
     #use sleep_ms to slow do the program so that python can keep up and also be proportional to servo frequency
     sleep_ms(20)
 
-    return servo_shoulder, servo_elbow #returns an
+    return servo_shoulder, servo_elbow #returns an int for each servo
 
 #This function will individually send their value to each servo (called twice)
 def init_servo(PWM_id):#Nathan
