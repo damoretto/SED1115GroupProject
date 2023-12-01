@@ -40,7 +40,7 @@ def read_potentiometers(potentiometer_id):#Dane
 
 #This function will use both value obtained from the potentiometers (x and y values) and turn them into
 #proportionally correct versions for the servos
-def xy_to_servos(x_value, y_value):#Estelle
+def xy_to_servos(x_value, y_value, seg1len, seg2len):#Estelle
     #(float, float)->int, int
 
     #initialize the variables containing both servo values
@@ -57,7 +57,7 @@ def xy_to_servos(x_value, y_value):#Estelle
     #use sleep_ms to slow do the program so that python can keep up and also be proportional to servo frequency
     sleep_ms(20)
 
-    return servo_shoulder, servo_elbow
+    return servo_shoulder, servo_elbow #returns an
 
 #This function will individually send their value to each servo (called twice)
 def init_servo(PWM_id):#Nathan
@@ -186,6 +186,7 @@ shoulder_servo = init_servo('GPIO1')
 elbow_servo = init_servo('GPIO0')
 wrist_servo = init_servo('GPIO2')
 
+#look at get choice function (Estelle)
 seg1len = int(input("Please enter the length of the arm segment in cm")) #do error checking of user imput on this
 seg2len = int(input("Please enter the length of the forearm segment in cm")) #do error checking of user imput on this
 
