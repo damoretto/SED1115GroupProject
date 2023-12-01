@@ -198,7 +198,7 @@ try:
             while True:
                 x_value = read_potentiometers(x_potentiometer_id)
                 y_value = read_potentiometers(y_potentiometer_id)
-                servo_shoulder_duty, servo_elbow_duty, seg1leg, seg2leg = xy_to_servos(x_value, y_value, seg1len, seg2len)
+                servo_shoulder_duty, servo_elbow_duty, seg1len, seg2len = xy_to_servos(x_value, y_value, seg1len, seg2len)
                 elbow_servo.duty_u16(servo_elbow_duty)
                 shoulder_servo.duty_u16(servo_shoulder_duty)
                 if is_button_pressed(button_id):
