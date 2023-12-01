@@ -10,7 +10,6 @@ from time import sleep_ms, sleep
 from machine import Pin, PWM
 import requests
 from io import BytesIO
-from PIL import Image
 import numpy as np
 import math
 
@@ -111,7 +110,7 @@ def get_choice():
         if choice != 0 and choice != 1 and choice != 2:
             print("wrong input. make sure you choose between 0, 1 and 2")
     return choice
-
+'''
 #This function will get the image in function of where it comes from
 def get_image_url():#Nathan
     #()->Image
@@ -162,7 +161,7 @@ def get_image_file():
     #you can return an opened file object
     return image   
 
-#this function will transfer the greyscale image object into an array
+#this function will transfer the greyscale image object into an array'''
 
 
 
@@ -193,16 +192,16 @@ try:
                 servo_shoulder_duty, servo_elbow_duty = xy_to_servos(x_value, y_value)
                 elbow_servo.duty_u16(servo_elbow_duty)
                 shoulder_servo.duty_u16(servo_shoulder_duty)
-                if is_button_pressed(button_id):
-                    pen_state = change_pen_state(wrist_servo, pen_state)
+                #if is_button_pressed(button_id):
+                   # pen_state = change_pen_state(wrist_servo, pen_state)
         except KeyboardInterrupt:
             wrist_servo.duty_u16(translate(30)) #disable servo by raising wrist
             print("The program was interrupted by the user")
-    elif get_choice == 1:
+    '''elif get_choice == 1:
         image = get_image_url()
 
     elif get_choice == 0:
-        image = get_image_file()
+        image = get_image_file()'''
 finally:
     #deinit all servos
     shoulder_servo.deinit()
