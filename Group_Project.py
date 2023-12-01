@@ -3,44 +3,36 @@
 #Submitted int the context of the SED1115 class, fall 2023 semester
 
 import os
-import sys
+#import sys
 from servo_translator import translate
-from picozero import Pot    #pip install picozero   (in terminal, will take some time)
-from time import sleep_ms, sleep
-from machine import Pin, PWM
-import requests
-from io import BytesIO
-from PIL import Image
-import numpy as np
+from time import sleep_ms
+from machine import Pin, PWM, ADC
+#import requests
+#from io import BytesIO
+#import numpy as np
 import math
 
 #set the file directory to avoid issues
-script_directory = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_directory)
+#script_directory = os.path.dirname(os.path.abspath(__file__))
+#os.chdir(script_directory)
 
 #This function will get input from each potentiometer (called once for each)
 def read_potentiometers(potentiometer_id):#Dane
     #()->float
-    
     #initialize the variable that will contain the value from the potentiometer
     potentiometer_value = 0
     #set potentiometer pin -> documentation for all that -> https://projects.raspberrypi.org/en/projects/introduction-to-the-pico/11
     #picozero is already imported as Pot
-    
-    dial = Pot(0)
-   
-    while True:
-        print(dial.value)
-        sleep(0.1)
-
+    adc = ADC(Pin(potentiometer_id))
     #read potentiometer (.value) and assign to variable
-
+    potentiometer_value = adc.read_u16()
+    #turn duty cycle into degrees
     #return potentiometer value variable
     return potentiometer_value
 
 #This function will use both value obtained from the potentiometers (x and y values) and turn them into
 #proportionally correct versions for the servos
-def xy_to_servos(x_value, y_value, seg1len, seg2len):#Estelle
+def xy_to_servos(x_value, y_value):#Estelle
     #(float, float)->int, int
 
     #initialize the variables containing both servo values
@@ -57,7 +49,7 @@ def xy_to_servos(x_value, y_value, seg1len, seg2len):#Estelle
     #use sleep_ms to slow do the program so that python can keep up and also be proportional to servo frequency
     sleep_ms(20)
 
-    return servo_shoulder, servo_elbow #returns an int for each servo
+    return servo_shoulder, servo_elbow
 
 #This function will individually send their value to each servo (called twice)
 def init_servo(PWM_id):#Nathan
@@ -118,7 +110,7 @@ def get_choice():
         if choice != 0 and choice != 1 and choice != 2:
             print("wrong input. make sure you choose between 0, 1 and 2")
     return choice
-
+'''
 #This function will get the image in function of where it comes from
 def get_image_url():#Nathan
     #()->Image
@@ -169,27 +161,25 @@ def get_image_file():
     #you can return an opened file object
     return image   
 
-#this function will transfer the greyscale image object into an array
+#this function will transfer the greyscale image object into an array'''
 
 
 
 '''main'''
 
 #initialize hardware IDs (documentation: https://randomnerdtutorials.com/raspberry-pi-pico-w-pinout-gpios/)
-#all at the same place so easier for user to control
-x_potentiometer_id = 'A1'   #x value potentiometer
-y_potentiometer_id = 'A0'   #y value potentiometer
+x_potentiometer_id = 'GP27'   #x value potentiometer
+y_potentiometer_id = 'GP26'   #y value potentiometer
 button_id = 'GPIO22'        #pen state button
 
 #initialize all servos
-shoulder_servo = init_servo('GPIO1')
-elbow_servo = init_servo('GPIO0')
+shoulder_servo = init_servo('GPIO0')
+elbow_servo = init_servo('GPIO1')
 wrist_servo = init_servo('GPIO2')
 
 #Get both segments lenghts from user
-#look at get choice function (Estelle)
-seg1len = int(input("Please enter the length of the arm segment in cm")) #do error checking of user imput on this
-seg2len = int(input("Please enter the length of the forearm segment in cm")) #do error checking of user imput on this
+seg1len = float(input("Please enter the length of the arm segment in cm: ")) #do error checking of user imput on this
+seg2len = float(input("Please enter the length of the forearm segment in cm: ")) #do error checking of user imput on this
 
 #this variable will contain the state of the button at all times (bool)
 pen_state = False   #at first not touching the paper
@@ -202,16 +192,16 @@ try:
                 servo_shoulder_duty, servo_elbow_duty = xy_to_servos(x_value, y_value)
                 elbow_servo.duty_u16(servo_elbow_duty)
                 shoulder_servo.duty_u16(servo_shoulder_duty)
-                if is_button_pressed(button_id):
-                    pen_state = change_pen_state(wrist_servo, pen_state)
+                #if is_button_pressed(button_id):
+                   # pen_state = change_pen_state(wrist_servo, pen_state)
         except KeyboardInterrupt:
             wrist_servo.duty_u16(translate(30)) #disable servo by raising wrist
             print("The program was interrupted by the user")
-    elif get_choice == 1:
+    '''elif get_choice == 1:
         image = get_image_url()
 
     elif get_choice == 0:
-        image = get_image_file()
+        image = get_image_file()'''
 finally:
     #deinit all servos
     shoulder_servo.deinit()
