@@ -12,6 +12,7 @@ import requests
 from io import BytesIO
 from PIL import Image
 import numpy as np
+import math
 
 #set the file directory to avoid issues
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -39,8 +40,14 @@ def xy_to_servos(x_value, y_value):#Estelle
     #initialize the variables containing both servo values
     shoulder_angle = 0
     elbow_angle = 0
+    seg1len = int(input("Please enter the length of the first segment in cm")) #do error checking of user imput on this
+    seg2len = int(input("Please enter the length of the second segment in cm")) #do error checking of user imput on this
     #use inverse kinematics to turn the x and y values into proportional angles between 0 and 180 degrees
 
+    elbow_angle = math.degrees(math.acos((x_value**2 + y_value**2 - seg1len**2 - seg2len**2)/(2*seg1len*seg2len))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of cosines
+    shoulder_angle = math.degrees((math.atan2(y_value, x_value)) - (math.atan2(seg2len*math.sin(elbow_angle)), (seg1len + seg2len*math.cos(elbow_angle)))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of sines
+    #maybe separate the conversion to degrees from the inverse kinematics to make it easier to read
+    
     #call translate from lab6 to turn the values into safe values for the servos
     servo_shoulder = translate(shoulder_angle)
     servo_elbow = translate(elbow_angle)
