@@ -3,19 +3,18 @@
 #Submitted int the context of the SED1115 class, fall 2023 semester
 
 import os
-import sys
+#import sys
 from servo_translator import translate
-from picozero import Pot
 from time import sleep_ms, sleep
-from machine import Pin, PWM
-import requests
-from io import BytesIO
-import numpy as np
+from machine import Pin, PWM, ADC
+#import requests
+#from io import BytesIO
+#import numpy as np
 import math
 
 #set the file directory to avoid issues
-script_directory = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_directory)
+#script_directory = os.path.dirname(os.path.abspath(__file__))
+#os.chdir(script_directory)
 
 #This function will get input from each potentiometer (called once for each)
 def read_potentiometers(potentiometer_id):#Dane
@@ -24,9 +23,9 @@ def read_potentiometers(potentiometer_id):#Dane
     potentiometer_value = 0
     #set potentiometer pin -> documentation for all that -> https://projects.raspberrypi.org/en/projects/introduction-to-the-pico/11
     #picozero is already imported as Pot
-    dial = Pot(potentiometer_id)
+    adc = ADC(Pin(potentiometer_id))
     #read potentiometer (.value) and assign to variable
-    potentiometer_value = dial.value()
+    potentiometer_value = adc.read_u16()
     #return potentiometer value variable
     return potentiometer_value
 
@@ -168,18 +167,18 @@ def get_image_file():
 '''main'''
 
 #initialize hardware IDs (documentation: https://randomnerdtutorials.com/raspberry-pi-pico-w-pinout-gpios/)
-x_potentiometer_id = 'A1'   #x value potentiometer
-y_potentiometer_id = 'A0'   #y value potentiometer
+x_potentiometer_id = 'GP27'   #x value potentiometer
+y_potentiometer_id = 'GP26'   #y value potentiometer
 button_id = 'GPIO22'        #pen state button
 
 #initialize all servos
-shoulder_servo = init_servo('GPIO1')
-elbow_servo = init_servo('GPIO0')
+shoulder_servo = init_servo('GPIO0')
+elbow_servo = init_servo('GPIO1')
 wrist_servo = init_servo('GPIO2')
 
 #Get both segments lenghts from user
-seg1len = int(input("Please enter the length of the arm segment in cm")) #do error checking of user imput on this
-seg2len = int(input("Please enter the length of the forearm segment in cm")) #do error checking of user imput on this
+seg1len = float(input("Please enter the length of the arm segment in cm: ")) #do error checking of user imput on this
+seg2len = float(input("Please enter the length of the forearm segment in cm: ")) #do error checking of user imput on this
 
 #this variable will contain the state of the button at all times (bool)
 pen_state = False   #at first not touching the paper
