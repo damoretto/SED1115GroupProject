@@ -186,6 +186,7 @@ shoulder_servo = init_servo('GPIO1')
 elbow_servo = init_servo('GPIO0')
 wrist_servo = init_servo('GPIO2')
 
+#Get both segments lenghts from user
 seg1len = int(input("Please enter the length of the arm segment in cm")) #do error checking of user imput on this
 seg2len = int(input("Please enter the length of the forearm segment in cm")) #do error checking of user imput on this
 
