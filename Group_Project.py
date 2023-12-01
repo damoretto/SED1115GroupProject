@@ -17,6 +17,17 @@ import numpy as np
 script_directory = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_directory)
 
+def initialize_pico():
+    
+    pwm = machine.PWM()
+
+    SERVO_PIN_1 = #GPIO pin number we use
+    SERVO_PIN_2 = #GPIO pin number we use
+
+    pwm.init(freq=50,s1=SERVO_PIN_1,s2=SERVO_PIN_2)
+
+    return pwm
+
 #This function will get input from each potentiometer (called once for each)
 def read_potentiometers(potentiometer_id):#Dane
     #()->float
@@ -25,10 +36,16 @@ def read_potentiometers(potentiometer_id):#Dane
     potentiometer_value = 0
     #set potentiometer pin -> documentation for all that -> https://projects.raspberrypi.org/en/projects/introduction-to-the-pico/11
     #picozero is already imported as Pot
+    
+    dial = Pot(0)
+   
+    while True:
+        print(dial.value)
+        sleep(0.1)
 
     #read potentiometer (.value) and assign to variable
 
-    #return potentiometr value variable
+    #return potentiometer value variable
     return potentiometer_value
 
 #This function will use both value obtained from the potentiometers (x and y values) and turn them into
