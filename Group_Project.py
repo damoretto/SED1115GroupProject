@@ -38,16 +38,31 @@ def xy_to_servos(x_value, y_value):#Estelle
     #initialize the variables containing both servo values
     shoulder_angle = 0
     elbow_angle = 0
-    
+    print(x_value, y_value)
+    #turn the duty cycle into a value /31
+    # input 0 - 65535
+    # x 0 - 216
+    # y 0 - 279
+    x_value = (x_value/65535)*216
+    y_value = (y_value/65535)*279
+    print(x_value, y_value)
+    #Calculate values of smaller components of the big formulas
+    AbaseC = math.sqrt((-50-x_value)**2 + y_value**2)
+    lAC = math.sqrt((-50-x_value)**2+((139.5-y_value)**2))
+    aBAC = math.acos((seg1len**2 + lAC**2 - seg2len**2)/(2*seg1len*lAC))
+    aYAC = math.acos((139.5**2 + lAC**2 - AbaseC**2)/(2*139.5*lAC))
+    aACB = math.asin((seg1len * math.sin(aBAC))/seg2len)
     #use inverse kinematics to turn the x and y values into proportional angles between 0 and 180 degrees
-    elbow_angle = math.degrees(math.acos((x_value**2 + y_value**2 - seg1len**2 - seg2len**2)/(2*seg1len*seg2len))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of cosines
-    shoulder_angle = math.degrees((math.atan2(y_value, x_value)) - (math.atan2((seg2len*math.sin(elbow_angle)), (seg1len + seg2len*math.cos(elbow_angle))))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of sines
+    elbow_angle = aBAC + aACB
+    shoulder_angle =  aBAC + aYAC
+    elbow_angle = 150 - math.degrees(elbow_angle)
+    shoulder_angle = math.degrees(shoulder_angle) - 75
     #maybe separate the conversion to degrees from the inverse kinematics to make it easier to read
     #call translate from lab6 to turn the values into safe values for the servos
     servo_shoulder = translate(shoulder_angle)
     servo_elbow = translate(elbow_angle)
-    #use sleep_ms to slow do the program so that python can keep up and also be proportional to servo frequency
-    sleep_ms(20)
+    #use sleep_ms to slow the program so that python can keep up and also be proportional to servo frequency
+    sleep_ms(20)#1/50th of a second
 
     return servo_shoulder, servo_elbow
 
@@ -178,8 +193,8 @@ elbow_servo = init_servo('GPIO1')
 wrist_servo = init_servo('GPIO2')
 
 #Get both segments lenghts from user
-seg1len = float(input("Please enter the length of the arm segment in cm: ")) #do error checking of user imput on this
-seg2len = float(input("Please enter the length of the forearm segment in cm: ")) #do error checking of user imput on this
+seg1len = 155
+seg2len = 155
 
 #this variable will contain the state of the button at all times (bool)
 pen_state = False   #at first not touching the paper

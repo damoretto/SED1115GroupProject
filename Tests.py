@@ -10,6 +10,8 @@ def xy_to_servos(x_value, y_value):#Estelle
     shoulder_angle = 0
     elbow_angle = 0
     
+    x_value = (x_value/65535)*31
+    y_value = (y_value/65535)*31
     #use inverse kinematics to turn the x and y values into proportional angles between 0 and 180 degrees
     elbow_angle = math.degrees(math.acos((x_value**2 + y_value**2 - seg1len**2 - seg2len**2)/(2*seg1len*seg2len))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of cosines
     shoulder_angle = math.degrees((math.atan2(y_value, x_value)) - (math.atan2((seg2len*math.sin(elbow_angle)), (seg1len + seg2len*math.cos(elbow_angle))))) #from https://www.youtube.com/watch?v=kAdbxsJZGto, law of sines
@@ -25,4 +27,4 @@ def xy_to_servos(x_value, y_value):#Estelle
 seg1len = 15.5
 seg2len = 15.5
 
-servo_shoulder_u16, servo_elbow_u16 = xy_to_servos(50, 58)
+servo_shoulder_u16, servo_elbow_u16 = xy_to_servos(3752, 4386)
