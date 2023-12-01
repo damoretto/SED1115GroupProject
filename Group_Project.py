@@ -5,7 +5,7 @@
 import os
 import sys
 from servo_translator import translate
-from picozero import Pot    #pip install picozero   (in terminal, will take some time)
+from picozero import Pot
 from time import sleep_ms, sleep
 from machine import Pin, PWM
 import requests
@@ -21,26 +21,19 @@ os.chdir(script_directory)
 #This function will get input from each potentiometer (called once for each)
 def read_potentiometers(potentiometer_id):#Dane
     #()->float
-    
     #initialize the variable that will contain the value from the potentiometer
     potentiometer_value = 0
     #set potentiometer pin -> documentation for all that -> https://projects.raspberrypi.org/en/projects/introduction-to-the-pico/11
     #picozero is already imported as Pot
-    
-    dial = Pot(0)
-   
-    while True:
-        print(dial.value)
-        sleep(0.1)
-
+    dial = Pot(potentiometer_id)
     #read potentiometer (.value) and assign to variable
-
+    potentiometer_value = dial.value()
     #return potentiometer value variable
     return potentiometer_value
 
 #This function will use both value obtained from the potentiometers (x and y values) and turn them into
 #proportionally correct versions for the servos
-def xy_to_servos(x_value, y_value, seg1len, seg2len):#Estelle
+def xy_to_servos(x_value, y_value):#Estelle
     #(float, float)->int, int
 
     #initialize the variables containing both servo values
@@ -57,7 +50,7 @@ def xy_to_servos(x_value, y_value, seg1len, seg2len):#Estelle
     #use sleep_ms to slow do the program so that python can keep up and also be proportional to servo frequency
     sleep_ms(20)
 
-    return servo_shoulder, servo_elbow #returns an int for each servo
+    return servo_shoulder, servo_elbow
 
 #This function will individually send their value to each servo (called twice)
 def init_servo(PWM_id):#Nathan
@@ -176,7 +169,6 @@ def get_image_file():
 '''main'''
 
 #initialize hardware IDs (documentation: https://randomnerdtutorials.com/raspberry-pi-pico-w-pinout-gpios/)
-#all at the same place so easier for user to control
 x_potentiometer_id = 'A1'   #x value potentiometer
 y_potentiometer_id = 'A0'   #y value potentiometer
 button_id = 'GPIO22'        #pen state button
@@ -187,7 +179,6 @@ elbow_servo = init_servo('GPIO0')
 wrist_servo = init_servo('GPIO2')
 
 #Get both segments lenghts from user
-#look at get choice function (Estelle)
 seg1len = int(input("Please enter the length of the arm segment in cm")) #do error checking of user imput on this
 seg2len = int(input("Please enter the length of the forearm segment in cm")) #do error checking of user imput on this
 
