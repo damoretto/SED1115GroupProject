@@ -3,18 +3,19 @@
 #Submitted int the context of the SED1115 class, fall 2023 semester
 
 import os
-#import sys
+import sys
 from servo_translator import translate
 from time import sleep_ms
 from machine import Pin, PWM, ADC
-#import requests
-#from io import BytesIO
-#import numpy as np
+import requests
+from io import BytesIO
+import numpy as np
 import math
+from PIL import Image
 
 #set the file directory to avoid issues
-#script_directory = os.path.dirname(os.path.abspath(__file__))
-#os.chdir(script_directory)
+script_directory = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_directory)
 
 #This function will get input from each potentiometer (called once for each)
 def read_potentiometers(potentiometer_id):#Dane
@@ -125,7 +126,8 @@ def get_choice():
         if choice != 0 and choice != 1 and choice != 2:
             print("wrong input. make sure you choose between 0, 1 and 2")
     return choice
-'''
+
+#The following functions are for the bonus assignement. It is not completed, but some of it has been written
 #This function will get the image in function of where it comes from
 def get_image_url():#Nathan
     #()->Image
@@ -144,7 +146,7 @@ def get_image_url():#Nathan
             image_found = True
         else:
             #try images from https://unsplash.com/
-            #try 'https://images.unsplash.com/photo-1700212966732-4e0ebd08ad42?q=80&w=3792&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+            #try https://images.unsplash.com/photo-1602345397613-0934a8812d23?q=80&w=3768&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
             print("failed to get the image. Make sure the image is from a good source")
     return image
 
@@ -156,6 +158,7 @@ def get_image_file():
     #flag fo the whil loop that makes sure that the image file exists
     img_not_found = True
     while img_not_found:
+        #try clu-soh-oga9Xg0KVnU-unsplash.JPG
         file_name = input("please enter the full name of the image file including the file extension (ex. .png .jpg ...):\n")
         try:
             #open image in grayscale
@@ -176,9 +179,11 @@ def get_image_file():
     #you can return an opened file object
     return image   
 
-#this function will transfer the greyscale image object into an array'''
-
-
+#These are the next functions that would be needed to make it work
+#Function that turns the image object into an array of lines
+#Function that turns all the lines into angles for the servos
+#Use the existing functions to do the rest
+#Note that only very simple images could be drawn using this method as it is not optimized at all
 
 '''main'''
 
