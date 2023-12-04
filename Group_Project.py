@@ -7,15 +7,9 @@ import sys
 from servo_translator import translate
 from time import sleep_ms
 from machine import Pin, PWM, ADC
-import requests
 from io import BytesIO
-import numpy as np
 import math
-from PIL import Image
 
-#set the file directory to avoid issues
-script_directory = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_directory)
 
 #This function will get input from each potentiometer (called once for each)
 def read_potentiometers(potentiometer_id):#Dane
