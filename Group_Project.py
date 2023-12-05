@@ -9,6 +9,9 @@ from time import sleep_ms
 from machine import Pin, PWM, ADC
 from io import BytesIO
 import math
+from pen_control import debounce, toggle_pen_state
+from PIL import Image
+import numpy as np
 
 
 #This function will get input from each potentiometer (called once for each)
@@ -116,62 +119,78 @@ def get_choice():
     choice = -1
     #this is for the user to choose where their image comes from (url or file)
     while choice != 0 and choice != 1 and choice != 2:
-        choice = int(input("Where is your image coming from? URL (0), file (1), potentiometers (2)"))
+        choice = int(input("Where is your image coming from? URL (0), file (1), potentiometers (2): "))
         if choice != 0 and choice != 1 and choice != 2:
             print("wrong input. make sure you choose between 0, 1 and 2")
     return choice
 
-#The following functions are for the bonus assignement. It is not completed, but some of it has been written
-#This function will get the image in function of where it comes from
-def get_image_url():#Nathan
-    #()->Image
-    #initialize the variable containing the Image object that will be returned
-    image = None
-    #flag that will make sure that a good link is used
-    image_found = False
-    while not image_found:
-        #get the url
-        url = input("Please paste the URL or the image you desire to print here:\n")
-        response = requests.get(url)
-        #staus code 200 means that the image was successfully fetched
-        if response.status_code == 200:
-            #open image in grayscale
-            image = Image.open(BytesIO(response.content)).convert('L')
-            image_found = True
-        else:
-            #try images from https://unsplash.com/
-            #try https://images.unsplash.com/photo-1602345397613-0934a8812d23?q=80&w=3768&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D
-            print("failed to get the image. Make sure the image is from a good source")
+def load_and_process_image(file_path):
+    image = Image.open(file_path)
+    image = image.convert('L')  # Convert to grayscale
+    image = image.resize((216, 279))  # Resize to match plotter area
+    image = image.point(lambda x: 0 if x < 128 else 255, '1')  # Convert to binary
     return image
 
-#This function will get the image object from  file 
-def get_image_file():
-    #()->Image
-    #initialize the variable containing the Image object that will be returned
-    image = None
-    #flag fo the whil loop that makes sure that the image file exists
-    img_not_found = True
-    while img_not_found:
-        #try clu-soh-oga9Xg0KVnU-unsplash.JPG
-        file_name = input("please enter the full name of the image file including the file extension (ex. .png .jpg ...):\n")
-        try:
-            #open image in grayscale
-            image = Image.open(file_name).convert('L')
-            img_not_found = False
-            #This happens if the image is not in the right directory or does not exists or if the name is spelled wrong
-        except OSError:
-            print("The image cannot be fond, make sure it is present in the same directory as this program and that you wrote the right name")
-            ex = input("press a then enter if you wish to leave the program\n")
-            if ex == 'a':
-                #this is to allow the user to eventually quit the program and go check in their files where the issue may come from
-                sys.exit()
-        except:
-            print("unkown error happened?")
-    else:
-        print("This should not happen, issue with the choice input")
+def detect_edges(image):
+    image_array = np.array(image)
+    edges = np.zeros_like(image_array)
 
-    #you can return an opened file object
-    return image   
+    for y in range(1, image_array.shape[0] - 1):
+        for x in range(1, image_array.shape[1] - 1):
+            if image_array[y, x] != image_array[y, x+1] or image_array[y, x] != image_array[y+1, x]:
+                edges[y, x] = 255
+    return edges
+
+def convert_to_plotter_coords(edges):
+    coords = []
+    for y in range(edges.shape[0]):
+        for x in range(edges.shape[1]):
+            if edges[y, x] == 255:
+                plotter_x, plotter_y = convert_pixel_to_plotter(x, y)
+                coords.append((plotter_x, plotter_y))
+    return coords
+
+def convert_pixel_to_plotter(x, y):
+    # Convert pixel coordinates to plotter coordinates
+    plotter_x = x  # Modify according to the plotter's coordinate system and scale
+    plotter_y = y  # Modify according to the plotter's coordinate system and scale
+    return plotter_x, plotter_y
+
+# Brachiograph Control Functions 
+
+def translate(angle):
+    #(int)->int
+    if not isinstance(angle, int) and not isinstance(angle, float):
+        print("The angle should be an int or float value")
+    #error handling
+    if angle > 180:
+        print("angle lowered to 180 because higher angles are not supported")
+        angle = 180
+    elif angle < 0:
+        print("angle highered to 0 because negative angles are not supported")
+        angle = 0
+
+    #turn the angle into a duty cycle that can be taken by the duty_u16 method
+    duty_cycle = int(((500+(2000)*angle/180)/20000)*65535)
+
+    if duty_cycle > 8191:
+        duty_cycle = 8191
+    elif duty_cycle < 1639:
+        duty_cycle = 1639
+    else:
+        pass
+
+    return duty_cycle
+
+# Plotting Function
+def plot_image(coords, shoulder_servo, elbow_servo, wrist_servo):
+    for x, y in coords:
+        shoulder_angle, elbow_angle = xy_to_servos(x, y)
+        shoulder_servo.duty_u16(translate(shoulder_angle))
+        elbow_servo.duty_u16(translate(elbow_angle))
+        wrist_servo.duty_u16(translate(90))  # Pen down
+        sleep_ms(20)  # Adjust as needed
+    wrist_servo.duty_u16(translate(0))  # Pen up
 
 #These are the next functions that would be needed to make it work
 #Function that turns the image object into an array of lines
@@ -184,7 +203,7 @@ def get_image_file():
 #initialize hardware IDs (documentation: https://randomnerdtutorials.com/raspberry-pi-pico-w-pinout-gpios/)
 x_potentiometer_id = 'GP27'   #x value potentiometer
 y_potentiometer_id = 'GP26'   #y value potentiometer
-button_id = 'GPIO22'        #pen state button
+button_id = 'GPIO22'          #pen state button
 
 #initialize all servos
 shoulder_servo = init_servo('GPIO0')
@@ -206,8 +225,14 @@ try:
                 servo_shoulder_duty, servo_elbow_duty = xy_to_servos(x_value, y_value)
                 elbow_servo.duty_u16(servo_elbow_duty)
                 shoulder_servo.duty_u16(servo_shoulder_duty)
-                #if is_button_pressed(button_id):
-                   # pen_state = change_pen_state(wrist_servo, pen_state)
+                button_state = debounce(button_id)
+                if button_state is not None:
+                    pen_state = toggle_pen_state(pen_state, button_id)
+                    if pen_state:
+                        wrist_servo.duty_u16(translate(90))  # Adjust angle for pen down
+                    else:
+                        wrist_servo.duty_u16(translate(0))   # Adjust angle for pen up
+
         except KeyboardInterrupt:
             wrist_servo.duty_u16(translate(30)) #disable servo by raising wrist
             print("The program was interrupted by the user")
