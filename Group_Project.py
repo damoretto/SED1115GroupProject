@@ -127,12 +127,6 @@ def plot_image(coords, shoulder_servo, elbow_servo, wrist_servo):
         sleep_ms(20)  # Adjust as needed
     wrist_servo.duty_u16(translate(0))  # Pen up
 
-#These are the next functions that would be needed to make it work
-#Function that turns the image object into an array of lines
-#Function that turns all the lines into angles for the servos
-#Use the existing functions to do the rest
-#Note that only very simple images could be drawn using this method as it is not optimized at all
-
 '''main'''
 
 #initialize hardware IDs (documentation: https://randomnerdtutorials.com/raspberry-pi-pico-w-pinout-gpios/)
