@@ -13,14 +13,16 @@ import numpy as np
 DEBOUNCE_TIME = 50  # milliseconds for button debouncing
 
 #This function will get input from each potentiometer (called once for each)
+#potentiometer id is GPIO number
 def read_potentiometers(potentiometer_id):#Dane
     #()->float
     #initialize the variable that will contain the value from the potentiometer
     potentiometer_value = 0
     #set potentiometer pin -> documentation for all that -> https://projects.raspberrypi.org/en/projects/introduction-to-the-pico/11
     #picozero is already imported as Pot
+    #convert analog to digital AKA voltage to number using built in ADC converter
     adc = ADC(Pin(potentiometer_id))
-    #read potentiometer (.value) and assign to variable
+    #read potentiometer (.value) as a 16 bit value and assign to variable
     potentiometer_value = adc.read_u16()
     #turn duty cycle into degrees
     #return potentiometer value variable
