@@ -1,6 +1,6 @@
-#This program is used to read data from potentiometers linked to a micropico and to communicate some x and y values
-#obtained through this process to two servos that are part of an "arm" that has the ultimate goal of drawing something on paper
-#Submitted int the context of the SED1115 class, fall 2023 semester
+'''This program is used to read data from potentiometers linked to a micropico and to communicate some x and y values
+obtained through this process to two servos that are part of an "arm" that has the ultimate goal of drawing something on paper
+Submitted int the context of the SED1115 class, fall 2023 semester'''
 
 import os
 import sys
