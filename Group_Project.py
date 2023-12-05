@@ -1,6 +1,6 @@
-'''This program is used to read data from potentiometers linked to a micropico and to communicate some x and y values
-obtained through this process to two servos that are part of an "arm" that has the ultimate goal of drawing something on paper
-Submitted int the context of the SED1115 class, fall 2023 semester'''
+#This program is used to read data from potentiometers linked to a micropico and to communicate some x and y values
+#obtained through this process to two servos that are part of an "arm" that has the ultimate goal of drawing something on paper
+#Submitted int the context of the SED1115 class, fall 2023 semester
 
 import os
 import sys
@@ -72,44 +72,6 @@ def init_servo(PWM_id):#Nathan
     pwm_object = PWM(pin)
     pwm_object.freq(50)
     return pwm_object
-
-#This function will verify if the button has changed states or not (pressed or not pressed) includes debouncing
-def is_button_pressed(button_id):#Nathan
-    #()->bool
-
-    #set input pin for button  (documentation https://docs.micropython.org/en/latest/library/machine.Pin.html)
-    button = Pin(button_id, Pin.IN)
-    #identify if the button is being pressed and return True if it is, else return False
-    if button.value():
-        return True
-    elif not button.value():
-        return False
-    else:
-        print("There seems to be an issue with the button")
-
-#This function will change the state of the pen (on/off the paper) can use the send_to_servo() function
-def change_pen_state(wrist_servo, pen_state):#Algo
-    #(bool)->bool
-
-    #define duty cycle for the two states of the pen (on/off the paper)
-
-    #conditional that will determine what happens to the state of the pen depending on its current state
-    if pen_state:    #if the pen is currently touching the paper
-
-        #send the duty cycle to the servo to change its position
-
-        #return opposite button state
-        return False
-
-    elif not pen_state: #if the pen is currently not touching the paper
-
-        #send the duty cycle to the servo to change its position
-
-        #return opposite button state
-        return True
-
-    else:
-        print("This should not happen, problem in change_pen_state() function")
     
 #This function will get the choice of the user on the provenance of the image
 def get_choice():
@@ -118,9 +80,9 @@ def get_choice():
     choice = -1
     #this is for the user to choose where their image comes from (url or file)
     while choice != 0 and choice != 1 and choice != 2:
-        choice = int(input("Where is your image coming from? URL (0), file (1), potentiometers (2): "))
+        choice = int(input("Where is your image coming from? file (1), potentiometers (2): "))
         if choice != 0 and choice != 1 and choice != 2:
-            print("wrong input. make sure you choose between 0, 1 and 2")
+            print("wrong input. Make sure you choose between 1 and 2")
     return choice
 
 def load_and_process_image(file_path):
@@ -155,32 +117,6 @@ def convert_pixel_to_plotter(x, y):
     plotter_y = y  # Modify according to the plotter's coordinate system and scale
     return plotter_x, plotter_y
 
-# Brachiograph Control Functions 
-
-def translate(angle):
-    #(int)->int
-    if not isinstance(angle, int) and not isinstance(angle, float):
-        print("The angle should be an int or float value")
-    #error handling
-    if angle > 180:
-        print("angle lowered to 180 because higher angles are not supported")
-        angle = 180
-    elif angle < 0:
-        print("angle highered to 0 because negative angles are not supported")
-        angle = 0
-
-    #turn the angle into a duty cycle that can be taken by the duty_u16 method
-    duty_cycle = int(((500+(2000)*angle/180)/20000)*65535)
-
-    if duty_cycle > 8191:
-        duty_cycle = 8191
-    elif duty_cycle < 1639:
-        duty_cycle = 1639
-    else:
-        pass
-
-    return duty_cycle
-
 # Plotting Function
 def plot_image(coords, shoulder_servo, elbow_servo, wrist_servo):
     for x, y in coords:
@@ -190,12 +126,6 @@ def plot_image(coords, shoulder_servo, elbow_servo, wrist_servo):
         wrist_servo.duty_u16(translate(90))  # Pen down
         sleep_ms(20)  # Adjust as needed
     wrist_servo.duty_u16(translate(0))  # Pen up
-
-#These are the next functions that would be needed to make it work
-#Function that turns the image object into an array of lines
-#Function that turns all the lines into angles for the servos
-#Use the existing functions to do the rest
-#Note that only very simple images could be drawn using this method as it is not optimized at all
 
 '''main'''
 
@@ -235,11 +165,12 @@ try:
         except KeyboardInterrupt:
             wrist_servo.duty_u16(translate(30)) #disable servo by raising wrist
             print("The program was interrupted by the user")
-    '''elif get_choice == 1:
-        image = get_image_url()
+    elif get_choice == 1:
+        image = load_and_process_image('file_path')
+        edges_array = detect_edges(image)
+        coordinates_list = convert_to_plotter_coords(edges_array)
+        plot_image(coordinates_list, shoulder_servo, elbow_servo, wrist_servo)
 
-    elif get_choice == 0:
-        image = get_image_file()'''
 finally:
     #deinit all servos
     shoulder_servo.deinit()
