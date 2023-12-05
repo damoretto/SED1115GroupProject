@@ -2,17 +2,15 @@
 #obtained through this process to two servos that are part of an "arm" that has the ultimate goal of drawing something on paper
 #Submitted int the context of the SED1115 class, fall 2023 semester
 
-import os
-import sys
 from servo_translator import translate
-from time import sleep_ms
+from time import sleep_ms, sleep
 from machine import Pin, PWM, ADC
-from io import BytesIO
 import math
 from pen_control import debounce, toggle_pen_state
 from PIL import Image
 import numpy as np
 
+DEBOUNCE_TIME = 50  # milliseconds for button debouncing
 
 #This function will get input from each potentiometer (called once for each)
 def read_potentiometers(potentiometer_id):#Dane
@@ -66,7 +64,6 @@ def xy_to_servos(x_value, y_value):#Estelle
 #This function will individually send their value to each servo (called twice)
 def init_servo(PWM_id):#Nathan
     #(int,int)->None
-
     #set PWM Pin, frequency and duty cycle
     pin = Pin(PWM_id)
     pwm_object = PWM(pin)
@@ -95,7 +92,6 @@ def load_and_process_image(file_path):
 def detect_edges(image):
     image_array = np.array(image)
     edges = np.zeros_like(image_array)
-
     for y in range(1, image_array.shape[0] - 1):
         for x in range(1, image_array.shape[1] - 1):
             if image_array[y, x] != image_array[y, x+1] or image_array[y, x] != image_array[y+1, x]:
@@ -127,6 +123,27 @@ def plot_image(coords, shoulder_servo, elbow_servo, wrist_servo):
         sleep_ms(20)  # Adjust as needed
     wrist_servo.duty_u16(translate(0))  # Pen up
 
+def debounce(button):
+    """
+    Debounces the button to ensure stable press detection.
+    Returns the stable state of the button (pressed or not).
+    """
+    first_reading = button.value()
+    sleep(DEBOUNCE_TIME / 1000.0)
+    second_reading = button.value()
+    if first_reading == second_reading:
+        return second_reading
+    else:
+        return None
+
+def toggle_pen_state(current_state, button):
+    """
+    Toggles the pen state based on the button press.
+    """
+    if button.value() == 1:  # Button pressed
+        return not current_state
+    return current_state
+
 '''main'''
 
 #initialize hardware IDs (documentation: https://randomnerdtutorials.com/raspberry-pi-pico-w-pinout-gpios/)
@@ -149,14 +166,15 @@ try:
     if get_choice() == 2:
         try:
             while True:
-                x_value = read_potentiometers(x_potentiometer_id)
-                y_value = read_potentiometers(y_potentiometer_id)
-                servo_shoulder_duty, servo_elbow_duty = xy_to_servos(x_value, y_value)
-                elbow_servo.duty_u16(servo_elbow_duty)
-                shoulder_servo.duty_u16(servo_shoulder_duty)
-                button_state = debounce(button_id)
+                x_value = read_potentiometers(x_potentiometer_id)   #get the x_value from potentiometers
+                y_value = read_potentiometers(y_potentiometer_id)   #get the y value from potentiometers
+                #turn these values into angles for the servos with inverse kinematics and turn into a duty cycle
+                servo_shoulder_duty, servo_elbow_duty = xy_to_servos(x_value, y_value) 
+                elbow_servo.duty_u16(servo_elbow_duty)  #send the pwm to the elbow servo
+                shoulder_servo.duty_u16(servo_shoulder_duty)    #send the pwm to the shoulder servo
+                button_state = debounce(button_id)  #check the state of the button
                 if button_state is not None:
-                    pen_state = toggle_pen_state(pen_state, button_id)
+                    pen_state = toggle_pen_state(pen_state, button_id)  #
                     if pen_state:
                         wrist_servo.duty_u16(translate(90))  # Adjust angle for pen down
                     else:
