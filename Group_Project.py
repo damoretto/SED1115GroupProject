@@ -44,9 +44,10 @@ def xy_to_servos(x_value, y_value):#Estelle
     x_value = (x_value/65535)*216
     y_value = (y_value/65535)*279
     print(x_value, y_value)
-    #Calculate values of smaller components of the big formulas
+    #Calculate distances using pythagorean theorem
     AbaseC = math.sqrt((-50-x_value)**2 + y_value**2)
     lenAC = math.sqrt((-50-x_value)**2+((139.5-y_value)**2))
+    #Calculate angles of total triangle using law of cosines and law of sines
     aBAC = math.acos((seg1len**2 + lenAC**2 - seg2len**2)/(2*seg1len*lenAC))
     aYAC = math.acos((139.5**2 + lenAC**2 - AbaseC**2)/(2*139.5*lenAC))
     aACB = math.asin((seg1len * math.sin(aBAC))/seg2len)
