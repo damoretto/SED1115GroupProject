@@ -176,7 +176,7 @@ try:
                 shoulder_servo.duty_u16(servo_shoulder_duty)    #send the pwm to the shoulder servo
                 button_state = debounce(button_id)  #check the state of the button
                 if button_state is not None:
-                    pen_state = toggle_pen_state(pen_state, button_id)  #
+                    pen_state = toggle_pen_state(pen_state, button_id)
                     if pen_state:
                         wrist_servo.duty_u16(translate(90))  # Adjust angle for pen down
                     else:
