@@ -35,9 +35,9 @@ def xy_to_servos(x_value, y_value):#Estelle
     shoulder_angle = 0
     elbow_angle = 0
     print(x_value, y_value)
-    #turn the duty cycle into a value /31
+    #turn the duty cycle into a value
     # input 0 - 65535
-    # x 0 - 216
+    # x 0 - 216 (size of the paper)
     # y 0 - 279
     x_value = (x_value/65535)*216
     y_value = (y_value/65535)*279
