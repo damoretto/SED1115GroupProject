@@ -28,7 +28,7 @@ def read_potentiometers(potentiometer_id):#Dane
     #return potentiometer value variable
     return potentiometer_value
 
-#This function will use both value obtained from the potentiometers (x and y values) and turn them into
+#This function will use both values obtained from the potentiometers (x and y values) and turn them into
 #proportionally correct versions for the servos
 def xy_to_servos(x_value, y_value):#Estelle
     #(float, float)->int, int
@@ -55,7 +55,6 @@ def xy_to_servos(x_value, y_value):#Estelle
     shoulder_angle =  aBAC + aYAC
     elbow_angle = 150 - math.degrees(elbow_angle)
     shoulder_angle = math.degrees(shoulder_angle) - 75
-    #maybe separate the conversion to degrees from the inverse kinematics to make it easier to read
     #call translate from lab6 to turn the values into safe values for the servos
     servo_shoulder = translate(shoulder_angle)
     servo_elbow = translate(elbow_angle)
