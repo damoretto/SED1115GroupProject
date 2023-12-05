@@ -46,9 +46,9 @@ def xy_to_servos(x_value, y_value):#Estelle
     print(x_value, y_value)
     #Calculate values of smaller components of the big formulas
     AbaseC = math.sqrt((-50-x_value)**2 + y_value**2)
-    lAC = math.sqrt((-50-x_value)**2+((139.5-y_value)**2))
-    aBAC = math.acos((seg1len**2 + lAC**2 - seg2len**2)/(2*seg1len*lAC))
-    aYAC = math.acos((139.5**2 + lAC**2 - AbaseC**2)/(2*139.5*lAC))
+    lenAC = math.sqrt((-50-x_value)**2+((139.5-y_value)**2))
+    aBAC = math.acos((seg1len**2 + lenAC**2 - seg2len**2)/(2*seg1len*lenAC))
+    aYAC = math.acos((139.5**2 + lenAC**2 - AbaseC**2)/(2*139.5*lenAC))
     aACB = math.asin((seg1len * math.sin(aBAC))/seg2len)
     #use inverse kinematics to turn the x and y values into proportional angles between 0 and 180 degrees
     elbow_angle = aBAC + aACB
