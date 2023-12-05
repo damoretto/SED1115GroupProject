@@ -1,5 +1,6 @@
 from machine import Pin
 from time import sleep
+from Group_Project import init_servo, translate
 
 # Constants
 DEBOUNCE_TIME = 50  # milliseconds for button debouncing
@@ -27,24 +28,5 @@ def toggle_pen_state(current_state, button):
     if button.value() == 1:  # Button pressed
         return not current_state
     return current_state
-
-# Main Loop
-try:
-    pen_state = False  # Initial state of the pen (up)
-    wrist_servo = init_servo('GPIO2')  # Initialize the servo for pen control
-
-    while True:
-        button_state = debounce(button_pin)
-        if button_state is not None:
-            pen_state = toggle_pen_state(pen_state, button_pin)
-            if pen_state:
-                wrist_servo.duty_u16(translate(90))  # Adjust angle for pen down
-            else:
-                wrist_servo.duty_u16(translate(0))   # Adjust angle for pen up
-
-
-except KeyboardInterrupt:
-    print("Program interrupted by the user")
-    wrist_servo.deinit()  # Deinitialize the servo on program termination
 
 
